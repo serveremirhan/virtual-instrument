@@ -2,15 +2,21 @@ import pygame
 import math
 
 class RadialMenu:
-    def __init__(self, center, inner_radius, outer_radius, num_segments):
+    # labels=None ekledik, böylece yazı göndermezsek hata vermez
+    def __init__(self, center, inner_radius, outer_radius, num_segments, labels=None):
         self.center = center
         self.inner_radius = inner_radius
         self.outer_radius = outer_radius
         self.num_segments = num_segments
         self.segment_angle = 360 / num_segments
         self.line_color = (255, 255, 255)
+        
+        self.labels = labels
+        # Pygame'in varsayılan fontunu kullanıyoruz (Arial benzeri), boyutu 24
+        self.font = pygame.font.SysFont(None, 24)
 
     def get_hovered_segment(self, mx, my):
+        # Burası eskisiyle tamamen aynı kalacak
         dx = mx - self.center[0]
         dy = my - self.center[1]
         distance = math.hypot(dx, dy)
@@ -33,8 +39,27 @@ class RadialMenu:
                 color = (0, 0, 0, 100)
                 
             self._draw_segment(surface, color, start_angle, end_angle)
+            
+            # --- YAZI ÇİZİM KISMI ---
+            if self.labels and i < len(self.labels):
+                # 1. Dilimin tam orta açısını bul (Derece)
+                mid_angle = (start_angle + end_angle) / 2
+                rad = math.radians(mid_angle)
+                
+                # 2. Yazının merkeze olan uzaklığı (İç ve dış çemberin tam ortası)
+                text_radius = (self.inner_radius + self.outer_radius) / 2
+                
+                # 3. Yazının X ve Y koordinatlarını Trigonometri ile hesapla
+                text_x = self.center[0] + text_radius * math.cos(rad)
+                text_y = self.center[1] + text_radius * math.sin(rad)
+                
+                # 4. Yazıyı oluştur (Beyaz renk) ve tam o koordinata ortala
+                text_surface = self.font.render(self.labels[i], True, (255, 255, 255))
+                text_rect = text_surface.get_rect(center=(text_x, text_y))
+                surface.blit(text_surface, text_rect)
 
     def _draw_segment(self, surface, color, start_angle, end_angle):
+        # Burası eskisiyle tamamen aynı kalacak
         points = []
         for angle in range(int(start_angle), int(end_angle) + 1):
             rad = math.radians(angle)
